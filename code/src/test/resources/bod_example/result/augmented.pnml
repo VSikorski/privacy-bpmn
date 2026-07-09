@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<pnml>
+    <net id="net1" type="http://www.pnml.org/version-2009/grammar/ptnet">
+        <arc source="t_confirm_email" target="P_BOD_DUTY_bod2_Alice_duty_confirm_email" id="t_confirm_email-P_BOD_DUTY_bod2_Alice_duty_confirm_email"/>
+        <arc source="P_BOD_DUTY_bod2_Alice_duty_set_login" target="T_BOD_VIOLATION_bod2_Alice" id="P_BOD_DUTY_bod2_Alice_duty_set_login-T_BOD_VIOLATION_bod2_Alice"/>
+        <arc source="t_set_password" target="P_BOD_DUTY_bod2_Alice_duty_set_password" id="t_set_password-P_BOD_DUTY_bod2_Alice_duty_set_password"/>
+        <arc source="t_set_login" target="p_1" id="a2"/>
+        <arc source="P_BOD_DUTY_bod2_Alice_duty_confirm_email" target="T_BOD_VIOLATION_bod2_Alice" id="P_BOD_DUTY_bod2_Alice_duty_confirm_email-T_BOD_VIOLATION_bod2_Alice"/>
+        <arc source="t_set_login" target="P_BOD_DUTY_bod2_Alice_duty_set_login" id="t_set_login-P_BOD_DUTY_bod2_Alice_duty_set_login"/>
+        <arc source="p_1" target="t_set_password" id="a3"/>
+        <arc source="t_set_login" target="P_BOD_DUTY_bod1_Alice_duty_set_login" id="t_set_login-P_BOD_DUTY_bod1_Alice_duty_set_login"/>
+        <arc source="P_BOD_DUTY_bod1_Alice_duty_set_password" target="T_BOD_VIOLATION_bod1_Alice" id="P_BOD_DUTY_bod1_Alice_duty_set_password-T_BOD_VIOLATION_bod1_Alice"/>
+        <arc source="p_start" target="t_set_login" id="a1"/>
+        <arc source="t_set_password" target="p_2" id="a4"/>
+        <arc source="p_2" target="t_confirm_email" id="a5"/>
+        <arc source="t_confirm_email" target="p_end" id="a6"/>
+        <arc source="t_set_password" target="P_BOD_DUTY_bod1_Alice_duty_set_password" id="t_set_password-P_BOD_DUTY_bod1_Alice_duty_set_password"/>
+        <arc source="P_BOD_DUTY_bod1_Alice_duty_set_login" target="T_BOD_VIOLATION_bod1_Alice" id="P_BOD_DUTY_bod1_Alice_duty_set_login-T_BOD_VIOLATION_bod1_Alice"/>
+        <arc source="P_BOD_DUTY_bod2_Alice_duty_set_password" target="T_BOD_VIOLATION_bod2_Alice" id="P_BOD_DUTY_bod2_Alice_duty_set_password-T_BOD_VIOLATION_bod2_Alice"/>
+        <place id="p_end"/>
+        <place id="P_BOD_DUTY_bod2_Alice_duty_set_password"/>
+        <place id="p_1"/>
+        <place id="P_BOD_DUTY_bod2_Alice_duty_set_login"/>
+        <place id="P_BOD_DUTY_bod1_Alice_duty_set_password"/>
+        <place id="p_start">
+            <initialMarking>
+                <text>1</text>
+            </initialMarking>
+        </place>
+        <place id="p_2"/>
+        <place id="P_BOD_DUTY_bod2_Alice_duty_confirm_email"/>
+        <place id="P_BOD_DUTY_bod1_Alice_duty_set_login"/>
+        <toolspecific tool="nl.rug.ds.bpm.ptnet" version="1.0">
+            <process>
+                <groups/>
+                <roles>
+                    <role id="Alice"/>
+                </roles>
+                <variables/>
+            </process>
+        </toolspecific>
+        <transition id="t_set_login"/>
+        <transition id="T_BOD_VIOLATION_bod2_Alice"/>
+        <transition id="t_confirm_email"/>
+        <transition id="T_BOD_VIOLATION_bod1_Alice"/>
+        <transition id="t_set_password"/>
+    </net>
+</pnml>

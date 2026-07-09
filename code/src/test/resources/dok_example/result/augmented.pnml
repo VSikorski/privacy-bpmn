@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<pnml>
+    <net id="net1" type="http://www.pnml.org/version-2009/grammar/ptnet">
+        <arc source="p_start" target="t_request_otp" id="a1"/>
+        <arc source="t_verify_otp" target="p_2" id="a4"/>
+        <arc source="t_request_otp" target="p_1" id="a2"/>
+        <arc source="p_2" target="t_authenticate" id="a5"/>
+        <arc source="t_authenticate" target="p_end" id="a6"/>
+        <arc source="t_verify_otp" target="P_KNOWLEDGE_dok1_Alice_otp_confirmation" id="t_verify_otp-P_KNOWLEDGE_dok1_Alice_otp_confirmation"/>
+        <arc source="P_KNOWLEDGE_dok1_Alice_otp_confirmation" target="T_DOK_VIOLATION_dok1_Alice" id="P_KNOWLEDGE_dok1_Alice_otp_confirmation-T_DOK_VIOLATION_dok1_Alice"/>
+        <arc source="p_1" target="t_verify_otp" id="a3"/>
+        <arc source="t_authenticate" target="P_KNOWLEDGE_dok1_Alice_authentication_token" id="t_authenticate-P_KNOWLEDGE_dok1_Alice_authentication_token"/>
+        <arc source="P_KNOWLEDGE_dok1_Alice_authentication_token" target="T_DOK_VIOLATION_dok1_Alice" id="P_KNOWLEDGE_dok1_Alice_authentication_token-T_DOK_VIOLATION_dok1_Alice"/>
+        <place id="p_end"/>
+        <place id="p_1"/>
+        <place id="P_KNOWLEDGE_dok1_Alice_otp_confirmation"/>
+        <place id="p_start">
+            <initialMarking>
+                <text>1</text>
+            </initialMarking>
+        </place>
+        <place id="p_2"/>
+        <place id="P_KNOWLEDGE_dok1_Alice_authentication_token"/>
+        <toolspecific tool="nl.rug.ds.bpm.ptnet" version="1.0">
+            <process>
+                <groups/>
+                <roles>
+                    <role id="Alice"/>
+                </roles>
+                <variables/>
+            </process>
+        </toolspecific>
+        <transition id="t_request_otp"/>
+        <transition id="t_authenticate"/>
+        <transition id="T_DOK_VIOLATION_dok1_Alice"/>
+        <transition id="t_verify_otp"/>
+    </net>
+</pnml>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<pnml>
+    <net id="net1" type="http://www.pnml.org/version-2009/grammar/ptnet">
+        <arc source="t_send_invoice" target="p_end" id="a8"/>
+        <arc source="P_SOD_DUTY_sod2_Bob_duty_stamp_invoice" target="T_SOD_VIOLATION_sod2_Bob" id="P_SOD_DUTY_sod2_Bob_duty_stamp_invoice-T_SOD_VIOLATION_sod2_Bob"/>
+        <arc source="p_2" target="t_stamp_invoice" id="a5"/>
+        <arc source="p_start" target="t_create_invoice" id="a1"/>
+        <arc source="t_stamp_invoice" target="p_3" id="a6"/>
+        <arc source="t_create_invoice" target="P_SOD_DUTY_sod1_Alice_duty_create_invoice" id="t_create_invoice-P_SOD_DUTY_sod1_Alice_duty_create_invoice"/>
+        <arc source="p_3" target="t_send_invoice" id="a7"/>
+        <arc source="t_sign_invoice" target="P_SOD_DUTY_sod2_Bob_duty_sign_invoice" id="t_sign_invoice-P_SOD_DUTY_sod2_Bob_duty_sign_invoice"/>
+        <arc source="t_create_invoice" target="p_1" id="a2"/>
+        <arc source="P_SOD_DUTY_sod2_Bob_duty_sign_invoice" target="T_SOD_VIOLATION_sod2_Bob" id="P_SOD_DUTY_sod2_Bob_duty_sign_invoice-T_SOD_VIOLATION_sod2_Bob"/>
+        <arc source="P_SOD_DUTY_sod1_Alice_duty_send_invoice" target="T_SOD_VIOLATION_sod1_Alice" id="P_SOD_DUTY_sod1_Alice_duty_send_invoice-T_SOD_VIOLATION_sod1_Alice"/>
+        <arc source="t_stamp_invoice" target="P_SOD_DUTY_sod2_Bob_duty_stamp_invoice" id="t_stamp_invoice-P_SOD_DUTY_sod2_Bob_duty_stamp_invoice"/>
+        <arc source="t_send_invoice" target="P_SOD_DUTY_sod1_Alice_duty_send_invoice" id="t_send_invoice-P_SOD_DUTY_sod1_Alice_duty_send_invoice"/>
+        <arc source="p_1" target="t_sign_invoice" id="a3"/>
+        <arc source="t_sign_invoice" target="p_2" id="a4"/>
+        <arc source="P_SOD_DUTY_sod1_Alice_duty_create_invoice" target="T_SOD_VIOLATION_sod1_Alice" id="P_SOD_DUTY_sod1_Alice_duty_create_invoice-T_SOD_VIOLATION_sod1_Alice"/>
+        <place id="p_3"/>
+        <place id="p_end"/>
+        <place id="P_SOD_DUTY_sod1_Alice_duty_create_invoice"/>
+        <place id="p_1"/>
+        <place id="p_start">
+            <initialMarking>
+                <text>1</text>
+            </initialMarking>
+        </place>
+        <place id="P_SOD_DUTY_sod1_Alice_duty_send_invoice"/>
+        <place id="P_SOD_DUTY_sod2_Bob_duty_stamp_invoice"/>
+        <place id="p_2"/>
+        <place id="P_SOD_DUTY_sod2_Bob_duty_sign_invoice"/>
+        <toolspecific tool="nl.rug.ds.bpm.ptnet" version="1.0">
+            <process>
+                <groups/>
+                <roles>
+                    <role id="Bob"/>
+                    <role id="Alice"/>
+                </roles>
+                <variables/>
+            </process>
+        </toolspecific>
+        <transition id="t_stamp_invoice"/>
+        <transition id="T_SOD_VIOLATION_sod2_Bob"/>
+        <transition id="t_sign_invoice"/>
+        <transition id="t_send_invoice"/>
+        <transition id="T_SOD_VIOLATION_sod1_Alice"/>
+        <transition id="t_create_invoice"/>
+    </net>
+</pnml>
