@@ -130,8 +130,18 @@ public class DoKModule extends AbstractPrivacyModule {
                     }
                 }
 
-                if (!roleCanCreate) {
-                    System.out.println("  Role " + roleId + " cannot create knowledge: " + knowledgeId);
+                boolean roleRequires = false;
+                if (knowledge.getRequiredBy() != null) {
+                    for (String transitionId : knowledge.getRequiredBy()) {
+                        if (roleTransitions.contains(transitionId)) {
+                            roleRequires = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!roleCanCreate && !roleRequires) {
+                    System.out.println("  Role " + roleId + " neither creates or requires knowledge: " + knowledgeId);
                     continue;
                 }
 
@@ -166,7 +176,6 @@ public class DoKModule extends AbstractPrivacyModule {
                 }
             }
 
-            // Create violation detector if role can acquire all critical knowledge
             if (roleAcquiredKnowledge.containsAll(criticalKnowledge) && knowledgePlaces.size() >= 2) {
                 String detectorName = "T_DOK_VIOLATION_" + constraint.getId() + "_" + roleId;
                 Transition violationDetector = new Transition(detectorName);

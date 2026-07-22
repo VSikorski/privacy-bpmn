@@ -3,44 +3,48 @@
     <!-- Role Mapping -->
     <roleMappings>
         <role id="Alice">
-            <transition>t_request_otp</transition>
-            <transition>t_verify_otp</transition>
-            <transition>t_authenticate</transition>
+            <transition>t_set_login</transition>
+            <transition>t_set_password</transition>
+            <transition>t_confirm_email</transition>
         </role>
     </roleMappings>
 
-    <!-- DoK Module -->
-     <divisionOfKnowledge>
-         <knowledgeSet>
-             <knowledge id="otp_code">
-                 <createdBy>
-                     <transition>t_request_otp</transition>
-                 </createdBy>
-                 <requiredBy>
-                     <transition>t_verify_otp</transition>
-                 </requiredBy>
-             </knowledge>
-             <knowledge id="otp_confirmation">
-                 <createdBy>
-                     <transition>t_verify_otp</transition>
-                 </createdBy>
-             </knowledge>
-             <knowledge id="authentication_token">
-                 <createdBy>
-                     <transition>t_authenticate</transition>
-                 </createdBy>
-             </knowledge>
-         </knowledgeSet>
+    <!-- BoD Module -->
+    <bindingOfDuty>
+        <duties>
+            <duty id="duty_set_login">
+                <createdBy>
+                    <transition>t_set_login</transition>
+                </createdBy>
+            </duty>
+            <duty id="duty_set_password">
+                <createdBy>
+                    <transition>t_set_password</transition>
+                </createdBy>
+            </duty>
+            <duty id="duty_confirm_email">
+                <createdBy>
+                    <transition>t_confirm_email</transition>
+                </createdBy>
+            </duty>
+        </duties>
 
-         <constraints>
-             <constraint id="dok1">
-                 <role>Alice</role>
-                 <criticalSet>
-                     <knowledge>otp_confirmation</knowledge>
-                     <knowledge>authentication_token</knowledge>
-                 </criticalSet>
-             </constraint>
-         </constraints>
+        <constraints>
+            <constraint id="bod1">
+                <boundDuties>
+                    <duty>duty_set_login</duty>
+                    <duty>duty_set_password</duty>
+                </boundDuties>
+            </constraint>
 
-        </divisionOfKnowledge>
+            <constraint id="bod2">
+                <boundDuties>
+                    <duty>duty_set_login</duty>
+                    <duty>duty_set_password</duty>
+                    <duty>duty_confirm_email</duty>
+                </boundDuties>
+            </constraint>
+        </constraints>
+
+    </bindingOfDuty>
 </privacySpecification>

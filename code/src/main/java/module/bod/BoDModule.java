@@ -36,24 +36,104 @@ public class BoDModule extends AbstractPrivacyModule {
             return;
         }
 
-        for (String detector : violationDetectors) {
+        for (BoDConstraint constraint : bindingOfDuty.getConstraints()) {
+            List<String> boundDuties = constraint.getBoundDuties();
+            Set<String> affectedRoles = findRolesWithDuties(boundDuties);
+
+            for (String roleId : affectedRoles) {
+                String detectorName = "T_BOD_VIOLATION_" + constraint.getId() + "_" + roleId;
+                Set<String> roleTransitions = getTransitionsForRole(roleId);
+
+                for (String dutyId : boundDuties) {
+                    BoDDuty duty = findDutyById(dutyId);
+
+                    if (duty == null) continue;
+
+                    if (duty.getCreatedBy() == null || duty.getCreatedBy().isEmpty()) {
+                        System.out.println("  Warning: Duty " + dutyId + " has no creating transitions. Skipping.");
+                        continue;
+                    }
+
+                    List<String> creatingTransitions = new ArrayList<>();
+                    for (String transitionId : duty.getCreatedBy()) {
+                        if (roleTransitions.contains(transitionId)) {
+                            creatingTransitions.add(transitionId);
+                        }
+                    }
+
+                    if (creatingTransitions.isEmpty()) {
+                        continue;
+                    }
+
+                    String groupId = "group_" + dutyId + "_" + roleId + "_" + constraint.getId();
+                    String formula;
+
+                    if (creatingTransitions.size() == 1) {
+                        String transitionId = creatingTransitions.get(0);
+                        formula = "AG(" + transitionId + " -> AF " + detectorName + ")";
+                        addFormulaToSpec(spec, formula, transitionId, roleId, constraint.getId(), groupId);
+                    } else {
+                        StringBuilder transitionGroup = new StringBuilder();
+                        for (int i = 0; i < creatingTransitions.size(); i++) {
+                            if (i > 0) transitionGroup.append(" OR ");
+                            transitionGroup.append(creatingTransitions.get(i));
+                        }
+                        formula = "AG((" + transitionGroup.toString() + ") -> AF " + detectorName + ")";
+                        addGroupedFormulaToSpec(spec, formula, creatingTransitions, roleId, constraint.getId(), groupId);
+                    }
+                }
+            }
+        }
+    }
+
+    private void addFormulaToSpec(
+        BPMSpecification spec,
+        String formula,
+        String transitionId,
+        String roleId,
+        String constraintId,
+        String groupId
+    ) {
+        boolean groupExists = spec.getGroups().stream().anyMatch(g -> g.getId().equals(groupId));
+        if (!groupExists) {
             Group group = new Group();
-            group.setId("group_" + detector);
-
+            group.setId(groupId);
             Element element = new Element();
-            element.setId(detector);
+            element.setId(transitionId);
             group.getElements().add(element);
-
             spec.addGroup(group);
+        }
 
+        String detectorGroupId = "group_detector_" + roleId + "_" + constraintId;
+        boolean detectorGroupExists = spec.getGroups().stream().anyMatch(g -> g.getId().equals(detectorGroupId));
+        if (!detectorGroupExists) {
+            Group detectorGroup = new Group();
+            detectorGroup.setId(detectorGroupId);
+            Element detectorElement = new Element();
+            detectorElement.setId("T_BOD_VIOLATION_" + constraintId + "_" + roleId);
+            detectorGroup.getElements().add(detectorElement);
+            spec.addGroup(detectorGroup);
+        }
+
+        String specId = "check_bod_" + transitionId + "_" + roleId + "_" + constraintId;
+        boolean specExists = spec.getSpecificationSets().stream()
+            .flatMap(set -> set.getSpecifications().stream())
+            .anyMatch(s -> s.getId().equals(specId));
+
+        if (!specExists) {
             Specification specification = new Specification();
-            specification.setId("check_" + detector);
-            specification.setType("BoDReachability");
+            specification.setId(specId);
+            specification.setType("AlwaysResponse");
 
-            InputElement inputElement = new InputElement();
-            inputElement.setTarget("p");
-            inputElement.setElement(group.getId());
-            specification.getInputElements().add(inputElement);
+            InputElement inputElementP = new InputElement();
+            inputElementP.setTarget("p");
+            inputElementP.setElement(groupId);
+            specification.getInputElements().add(inputElementP);
+
+            InputElement inputElementQ = new InputElement();
+            inputElementQ.setTarget("q");
+            inputElementQ.setElement(detectorGroupId);
+            specification.getInputElements().add(inputElementQ);
 
             SpecificationSet specSet;
             if (spec.getSpecificationSets().isEmpty()) {
@@ -63,33 +143,70 @@ public class BoDModule extends AbstractPrivacyModule {
                 specSet = spec.getSpecificationSets().get(0);
             }
             specSet.getSpecifications().add(specification);
+            System.out.println("  Added: " + formula);
+        }
+    }
 
-            boolean hasBoDReachability = spec.getSpecificationTypes().stream()
-                    .anyMatch(t -> t.getId().equals("BoDReachability"));
-
-            if (!hasBoDReachability) {
-                SpecificationType specType = new SpecificationType();
-                specType.setId("BoDReachability");
-
-                Input input = new Input();
-                input.setType("and");
-                input.setValue("p");
-                specType.getInputs().add(input);
-
-                Formula formula = new Formula();
-                formula.setLanguage("CTLSPEC");
-                formula.setFormula("EF p");
-                specType.getFormulas().add(formula);
-
-                Message message = new Message();
-                message.setHold("BoD Detector Transition is reachable (duties are bound)");
-                message.setFail("BoD VDetector Transition is not unreachable (duties are not bound)");
-                specType.setMessage(message);
-
-                spec.addSpecificationType(specType);
+    private void addGroupedFormulaToSpec(
+        BPMSpecification spec,
+        String formula,
+        List<String> transitionIds,
+        String roleId,
+        String constraintId,
+        String groupId
+    ) {
+        boolean groupExists = spec.getGroups().stream().anyMatch(g -> g.getId().equals(groupId));
+        if (!groupExists) {
+            Group group = new Group();
+            group.setId(groupId);
+            for (String transitionId : transitionIds) {
+                Element element = new Element();
+                element.setId(transitionId);
+                group.getElements().add(element);
             }
+            spec.addGroup(group);
+        }
 
-            System.out.println("  Added EF p for " + detector);
+        String detectorGroupId = "group_detector_" + roleId + "_" + constraintId;
+        boolean detectorGroupExists = spec.getGroups().stream().anyMatch(g -> g.getId().equals(detectorGroupId));
+        if (!detectorGroupExists) {
+            Group detectorGroup = new Group();
+            detectorGroup.setId(detectorGroupId);
+            Element detectorElement = new Element();
+            detectorElement.setId("T_BOD_VIOLATION_" + constraintId + "_" + roleId);
+            detectorGroup.getElements().add(detectorElement);
+            spec.addGroup(detectorGroup);
+        }
+
+        String specId = "check_bod_group_" + roleId + "_" + constraintId;
+        boolean specExists = spec.getSpecificationSets().stream()
+            .flatMap(set -> set.getSpecifications().stream())
+            .anyMatch(s -> s.getId().equals(specId));
+
+        if (!specExists) {
+            Specification specification = new Specification();
+            specification.setId(specId);
+            specification.setType("AlwaysResponse");
+
+            InputElement inputElementP = new InputElement();
+            inputElementP.setTarget("p");
+            inputElementP.setElement(groupId);
+            specification.getInputElements().add(inputElementP);
+
+            InputElement inputElementQ = new InputElement();
+            inputElementQ.setTarget("q");
+            inputElementQ.setElement(detectorGroupId);
+            specification.getInputElements().add(inputElementQ);
+
+            SpecificationSet specSet;
+            if (spec.getSpecificationSets().isEmpty()) {
+                specSet = new SpecificationSet();
+                spec.addSpecificationSet(specSet);
+            } else {
+                specSet = spec.getSpecificationSets().get(0);
+            }
+            specSet.getSpecifications().add(specification);
+            System.out.println("  Added: " + formula);
         }
     }
 
@@ -150,19 +267,18 @@ public class BoDModule extends AbstractPrivacyModule {
         }
 
         if (dutyPlaces.size() >= 2) {
-            // Create the violation detectors
             String detectorName = "T_BOD_VIOLATION_" + constraint.getId() + "_" + roleId;
             Transition violationDetector = new Transition(detectorName);
             net.addTransition(violationDetector);
             violationDetectors.add(detectorName);
 
-            // Connect all duty places as inputs
             for (Place dutyPlace : dutyPlaces.values()) {
                 net.addArc(dutyPlace, violationDetector);
             }
 
             System.out.println("  Created BoD violation detector for role: " + roleId);
-            System.out.println("    Check: EF " + detectorName + " (all duties can happen together)");
+            System.out.println("    Detector: " + detectorName);
+            System.out.println("    Bound duties: " + dutyPlaces.keySet());
         }
     }
 
